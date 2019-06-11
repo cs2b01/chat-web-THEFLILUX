@@ -45,6 +45,15 @@ def get_users():
         data.append(user)
     return Response(json.dumps(data, cls=connector.AlchemyEncoder), mimetype='application/json')
 
+@app.route('/messages', methods = ['GET'])
+def get_Message():
+    session = db.getSession(engine)
+    dbResponse = session.query(entities.Message)
+    data = []
+    for messages in dbResponse:
+        data.append(messages)
+    return Response(json.dumps(data, cls=connector.AlchemyEncoder), mimetype='application/json')
+
 @app.route('/users', methods = ['POST'])
 def create_user():
     c =  json.loads(request.form['values'])
@@ -58,6 +67,19 @@ def create_user():
     session.add(user)
     session.commit()
     return 'Created User'
+
+@app.route('/messages', methods = ['POST'])
+def create_Message():
+    c =  json.loads(request.form['values'])
+    message = entities.Message(
+        content=c['content'],
+        user_from_id=c['user_from_id'],
+        user_to_id=c['user_to_id'],
+    )
+    session = db.getSession(engine)
+    session.add(message)
+    session.commit()
+    return 'Created Message'
 
 @app.route('/users', methods = ['PUT'])
 def update_user():
@@ -99,6 +121,14 @@ def create_test_users():
     db_session.add(user)
     db_session.commit()
     return "Test user created!"
+
+@app.route('/create_test_messages', methods = ['GET'])
+def create_test_messages():
+    db_session = db.getSession(engine)
+    message = entities.Message(content="David", user_from_id="2", user_to_id="3")
+    db_session.add(message)
+    db_session.commit()
+    return "Test message created!"
 
 if __name__ == '__main__':
     app.secret_key = ".."
